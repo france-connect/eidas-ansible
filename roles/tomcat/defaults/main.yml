@@ -1,0 +1,8 @@
+---
+tomcat_jvm_options: ""
+tomcat_enable_debugger: false
+tomcat_enable_unsecure_random: false
+tomcat_java_openjdk_pkg: java-openjdk
+tomcat_major_version: 8
+tomcat_version: 8.5.6
+tomcat_folder: /usr/share/tomcat

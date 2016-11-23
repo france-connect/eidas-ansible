@@ -1,0 +1,111 @@
+---
+- name: checks that tomcat is not installed with yum
+  become: yes
+  action: "{{ ansible_pkg_mgr }}
+    name={{ item }}
+    state=absent"
+  with_items:
+    - tomcat
+
+- name: gets dependencies
+  become: yes
+  action: "{{ ansible_pkg_mgr }}
+    name={{ item }}
+    state=installed"
+  with_items:
+    - tar
+    - unzip
+    - "{{ tomcat_java_openjdk_pkg }}"
+
+- name: adds tomcat group
+  become: yes
+  group:
+    name: tomcat
+    state: present
+
+- name: adds tomcat user
+  become: yes
+  user:
+    name: tomcat
+    createhome: no
+    home: "{{ tomcat_folder }}"
+    shell: /bin/nologin
+    group: tomcat
+
+- name: gets tomcat tar.gz
+  get_url:
+    url: "http://archive.apache.org/dist/tomcat/tomcat-{{ tomcat_major_version }}/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+    dest: "/tmp/apache-tomcat-{{ tomcat_version }}.tar.gz"
+  register: tomcat_download
+
+- name: creates directory
+  become: yes
+  file:
+    state: directory
+    path: "{{ tomcat_folder }}"
+
+- name: unarchives
+  become: yes
+  shell: "tar xvf /tmp/apache-tomcat-8*tar.gz -C {{ tomcat_folder }} --strip-components=1"
+  when: tomcat_download.changed
+
+- name: removes default webapps
+  become: yes
+  file:
+    state: absent
+    path: "{{ tomcat_folder }}/{{ item }}"
+  with_items:
+    - "webapps/docs"
+    - "webapps/examples"
+    - "webapps/host-manager"
+    - "webapps/manager"
+    - "webapps/ROOT"
+
+- name: changes folder ownership
+  become: yes
+  file:
+    recurse: yes
+    path: "{{ tomcat_folder }}"
+    group: tomcat
+    owner: tomcat
+  notify: restart tomcat
+
+- name: changes conf folder permissions
+  become: yes
+  file:
+    recurse: yes
+    path: "{{ tomcat_folder }}/conf"
+    mode: a-rwxX,u+rwX
+  notify: restart tomcat
+
+- name: changes logs folder permissions
+  become: yes
+  file:
+    recurse: yes
+    path: "{{ tomcat_folder }}/logs"
+    mode: a-rwxX,u+wX
+  notify: restart tomcat
+
+- name: setup debugger options for tomcat
+  set_fact:
+    tomcat_jvm_options: "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=1044 {{tomcat_jvm_options}}"
+  when: tomcat_enable_debugger
+
+- name: setup unsecure random options for tomcat
+  set_fact:
+    tomcat_jvm_options: "-Djava.security.egd=file:/dev/./urandom {{tomcat_jvm_options}}"
+  when: tomcat_enable_unsecure_random
+
+- name: create service file
+  become: yes
+  template:
+    src: tomcat.service.j2
+    dest: /etc/systemd/system/tomcat.service
+  notify: restart tomcat
+
+- name: reload systemd
+  become: yes
+  command: systemctl daemon-reload enabled=false
+  notify: restart tomcat
+
+#TODO: unpackWARs="false" autoDeploy="false" deployOnStartup=false dans tomcat/conf/server.xml (la ligne par défaut est             unpackWARs="true" autoDeploy="true">)

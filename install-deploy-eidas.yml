@@ -1,0 +1,10 @@
+- hosts: eidas-node
+  roles:
+  - role: tomcat
+    tomcat_java_openjdk_pkg: java-1.7.0-openjdk
+
+  - role: deploy-eidas-node
+
+  tags: [ eidas-node ]
+
+

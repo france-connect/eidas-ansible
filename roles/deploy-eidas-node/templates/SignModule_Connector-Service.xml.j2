@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties>
+	<comment>SWModule sign with JKS.</comment>
+	<!-- Certificates -->
+	<entry key="check_certificate_validity_period">false</entry>
+	<entry key="disallow_self_signed_certificate">false</entry>
+
+	<!-- signing Algorithm SHA_512(default),SHA_384,SHA_256 -->
+	<!-- http://www.w3.org/2001/04/xmldsig-more#rsa-sha256 -->
+	<!-- http://www.w3.org/2001/04/xmldsig-more#rsa-sha384 -->
+	<!-- http://www.w3.org/2001/04/xmldsig-more#rsa-sha512 -->
+
+	<entry key="signature.algorithm">http://www.w3.org/2001/04/xmldsig-more#rsa-sha512</entry>
+
+	<!-- List of incoming Signature algorithms white list separated by ; (default all)
+         http://www.w3.org/2001/04/xmldsig-more#rsa-sha256;
+         http://www.w3.org/2001/04/xmldsig-more#rsa-sha384;
+         http://www.w3.org/2001/04/xmldsig-more#rsa-sha512;
+         http://www.w3.org/2001/04/xmldsig-more#rsa-ripemd160;
+         http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256;
+         http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384;
+         http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512 -->
+
+	<entry key="signature.algorithm.whitelist">
+		http://www.w3.org/2001/04/xmldsig-more#rsa-sha256;
+		http://www.w3.org/2001/04/xmldsig-more#rsa-sha384;
+		http://www.w3.org/2001/04/xmldsig-more#rsa-sha512;
+		http://www.w3.org/2001/04/xmldsig-more#rsa-ripemd160;
+		http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256;
+		http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384;
+		http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512 </entry>
+		
+	<!-- signing response assertion true/false (default false) -->
+	<entry key="response.sign.assertions">false</entry>
+	<entry key="keyStorePassword">{{ connector_signature_communication_keystore_password }}</entry>
+	<entry key="keyPassword">{{ connector_signature_communication_key_password }}</entry>
+	<entry key="keyStoreType">{{ connector_signature_communication_keystore_type }}</entry>
+	
+	<entry key="keyStorePath">{{ keystores_directory }}{{ connector_signature_communication_keystore_file_name }}</entry>
+	<entry key="issuer">{{ connector_signature_communication_certificate_issuer }}</entry>
+	<entry key="serialNumber">{{ connector_signature_communication_certificate_serialnumber }}</entry>
+	
+	<!-- Metadata signature configuration -->
+	<entry key="metadata.keyStorePath">{{ keystores_directory }}{{ connector_signature_metadata_keystore_file_name }}</entry>
+	<entry key="metadata.keyStorePassword">{{ connector_signature_metadata_keystore_password }}</entry>
+	<entry key="metadata.keyStoreType">{{ connector_signature_metadata_keystore_type }}</entry>
+	<entry key="metadata.keyPassword">{{ connector_signature_metadata_key_password }}</entry>
+	
+	<entry key="metadata.issuer">{{ connector_signature_metadata_certificate_issuer }}</entry>
+	<entry key="metadata.serialNumber">{{ connector_signature_metadata_certificate_serialnumber }}</entry>
+
+</properties>

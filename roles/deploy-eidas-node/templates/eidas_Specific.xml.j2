@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+        <!-- Certificates -->
+        <entry key="check_certificate_validity_period">false</entry>
+        <entry key="disallow_self_signed_certificate">false</entry>
+
+        <!-- signing Algorithm SHA_512(default),SHA_384,SHA_256 -->
+		<!-- http://www.w3.org/2001/04/xmldsig-more#rsa-sha256 -->
+		<!-- http://www.w3.org/2001/04/xmldsig-more#rsa-sha384 -->
+		<!-- http://www.w3.org/2001/04/xmldsig-more#rsa-sha512 -->
+
+        <entry key="signature.algorithm">http://www.w3.org/2001/04/xmldsig-more#rsa-sha512</entry>
+
+        <!--
+	     http://www.w3.org/2001/04/xmldsig-more#rsa-sha256;
+             http://www.w3.org/2001/04/xmldsig-more#rsa-sha384;
+             http://www.w3.org/2001/04/xmldsig-more#rsa-sha512;
+             http://www.w3.org/2001/04/xmldsig-more#rsa-ripemd160;
+             http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256;
+             http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384;
+             http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512
+	-->
+
+        <entry key="signature.algorithm.whitelist">
+       		 http://www.w3.org/2001/04/xmldsig-more#rsa-sha256;
+             http://www.w3.org/2001/04/xmldsig-more#rsa-sha384;
+             http://www.w3.org/2001/04/xmldsig-more#rsa-sha512;
+             http://www.w3.org/2001/04/xmldsig-more#rsa-ripemd160;
+             http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha256;
+             http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha384;
+             http://www.w3.org/2001/04/xmldsig-more#ecdsa-sha512 </entry>
+
+       <!-- signing response assertion true/false (default false) -->
+        <entry key="response.sign.assertions">true</entry>
+
+       <!-- Encryption algorithm -->
+        <!--<entry key="data.encryption.algorithm"></entry>-->
+        <!-- List of Encryption algorithms
+	   http://www.w3.org/2009/xmlenc11#aes128-gcm;
+	   http://www.w3.org/2009/xmlenc11#aes256-gcm;
+	   http://www.w3.org/2009/xmlenc11#aes192-gcm
+
+        -->
+     <!-- Decryption algorithm Whitelist-->
+
+       <entry key="encryption.algorithm.whitelist">
+              http://www.w3.org/2009/xmlenc11#aes128-gcm;
+	      http://www.w3.org/2009/xmlenc11#aes256-gcm;
+	      http://www.w3.org/2009/xmlenc11#aes192-gcm</entry>
+
+	<!-- enforce encryption of the SAML response -->
+	<entry key="response.encryption.mandatory">false</entry>
+	
+	<!-- Country Code of this Service -->
+	<entry key="service.countrycode">FR</entry>
+	<!-- Method to call after IdP -->
+	<entry key="service.specificidpredirect.url">http://localhost:8090/EidasNode/IdpResponse</entry>
+	<!-- level of assurance for the service -->
+	<entry key="service.LoA">http://eidas.europa.eu/LoA/substantial</entry>
+	
+	<!--  metadata contact attributes  -->
+	<!--  Connector -->
+	<entry key="connector.contact.support.email">support.partenaires@franceconnect.gouv.fr</entry>
+	<entry key="connector.contact.support.company">FranceConnect Support Operator</entry>
+	<entry key="connector.contact.support.givenname"/>
+	<entry key="connector.contact.support.surname"/>
+	<entry key="connector.contact.support.phone"/>
+	<entry key="connector.contact.technical.email">produit@franceconnect.gouv.fr</entry>
+	<entry key="connector.contact.technical.company">FranceConnect Technical Support Team</entry>
+	<entry key="connector.contact.technical.givenname"/>
+	<entry key="connector.contact.technical.surname"/>
+	<entry key="connector.contact.technical.phone"/>
+	<!--  ProxyService -->
+	<entry key="service.contact.support.email">support.partenaires@franceconnect.gouv.fr</entry>
+	<entry key="service.contact.support.company">FranceConnect Support Operator</entry>
+	<entry key="service.contact.support.givenname"/>
+	<entry key="service.contact.support.surname"/>
+	<entry key="service.contact.support.phone"/>
+	<entry key="service.contact.technical.email">produit@franceconnect.gouv.fr</entry>
+	<entry key="service.contact.technical.company">FranceConnect Technical Support Team</entry>
+	<entry key="service.contact.technical.givenname"/>
+	<entry key="service.contact.technical.surname"/>
+	<entry key="service.contact.technical.phone"/>
+
+</properties>

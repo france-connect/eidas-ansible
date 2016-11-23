@@ -1,0 +1,67 @@
+#certificates informations
+keystores_directory: /etc/fc-eidas/certs/
+config_directory: /etc/fc-eidas/
+
+##Connector/Service Provider
+###Encryption/Decryption
+connector_encryption_communication_keystore_file_name: eidasKeyStore_Connector_CA.jks
+connector_encryption_communication_keystore_password: local-demo
+connector_encryption_communication_keystore_type: JKS
+connector_encryption_communication_key_password: local-demo
+   
+connector_encryption_communication_certificate_issuer_ca: CN=speps-ca-demo-certificate, OU=STORK, O=SPEPS, L=EU, ST=EU, C=CA
+connector_encryption_communication_certificate_serialnumber_ca: 561bc0c8
+ 
+connector_decryption_communication_certificate_issuer: CN=speps-ca-demo-certificate, OU=STORK, O=SPEPS, L=EU, ST=EU, C=CA
+connector_decryption_communication_certificate_serialnumber: 54c8fc88
+  
+###Signature
+connector_signature_communication_keystore_file_name: eidasKeyStore_Connector_CA.jks
+connector_signature_communication_keystore_password: local-demo
+connector_signature_communication_keystore_type: JKS
+connector_signature_communication_key_password: local-demo
+ 
+connector_signature_communication_certificate_issuer: CN=speps-ca-demo-certificate, OU=STORK, O=SPEPS, L=EU, ST=EU, C=CA
+connector_signature_communication_certificate_serialnumber: 54c8fc88
+ 
+connector_signature_metadata_keystore_file_name: eidasKeyStore_METADATA.jks
+connector_signature_metadata_keystore_password: local-demo
+connector_signature_metadata_keystore_type: JKS
+connector_signature_metadata_key_password: local-demo
+ 
+connector_signature_metadata_certificate_issuer: CN=metadata, OU=DIGIT, O=EC, L=Brussels, ST=EU, C=BE
+connector_signature_metadata_certificate_serialnumber: 561bc0c8
+  
+##ProxyService/Identity Provider
+service_fc_url: https://fcp.integ01.dev-franceconnect.fr/api/v1
+service_fc_client_id: 
+service_fc_client_secret: 
+
+###Encryption/Decryption
+service_encryption_communication_keystore_file_name: eidasKeyStore_Service_CA.jks
+service_encryption_communication_keystore_password: local-demo
+service_encryption_communication_keystore_type: JKS
+service_encryption_communication_key_password: local-demo
+   
+service_encryption_communication_certificate_issuer_ca: CN=cpeps-ca-demo-certificate, OU=STORK, O=CPEPS, L=EU, ST=EU, C=CA
+service_encryption_communication_certificate_serialnumber_ca: 561bc0c8
+ 
+service_decryption_communication_certificate_issuer: CN=cpeps-ca-demo-certificate, OU=STORK, O=CPEPS, L=EU, ST=EU, C=CA
+service_decryption_communication_certificate_serialnumber: 54c8f87d
+  
+###Signature
+service_signature_communication_keystore_file_name: eidasKeyStore_Connector_CA.jks
+service_signature_communication_keystore_password: local-demo
+service_signature_communication_keystore_type: JKS
+service_signature_communication_key_password: local-demo
+
+service_signature_communication_certificate_issuer: CN=speps-ca-demo-certificate, OU=STORK, O=SPEPS, L=EU, ST=EU, C=CA
+service_signature_communication_certificate_serialnumber: 54c8fc88
+
+service_signature_metadata_keystore_file_name: eidasKeyStore_METADATA.jks
+service_signature_metadata_keystore_password: local-demo
+service_signature_metadata_keystore_type: JKS
+service_signature_metadata_key_password: local-demo
+ 
+service_signature_metadata_certificate_issuer: CN=metadata, OU=DIGIT, O=EC, L=Brussels, ST=EU, C=BE
+service_signature_metadata_certificate_serialnumber: 561bc0c8

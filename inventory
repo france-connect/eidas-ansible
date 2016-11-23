@@ -1,0 +1,2 @@
+eidas-node ansible_host=eidas-node.example.com
+

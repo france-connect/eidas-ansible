@@ -1,0 +1,161 @@
+---
+# tasks file for deploy-eidas-node
+
+- name: Création du répertoire "shared/lib" dans Tomcat
+  file: path={{ tomcat_folder }}/shared/lib state=directory
+
+- name: Création du répertoire "eidas" dans /var/log
+  file: path=/var/log/eidas state=directory group=tomcat mode="u=rwx,g=rwx,o="
+
+- name: Ajustement de la conf shared.loader dans catalina.properties
+  lineinfile: dest={{ tomcat_folder }}/conf/catalina.properties regexp=^shared\.loader line=shared.loader=${catalina.home}/shared/lib/*.jar
+
+- name: Ajustement du CLASSPATH Tomcat dans catalina.sh
+  lineinfile: dest={{ tomcat_folder }}/bin/catalina.sh regexp=^CLASSPATH="\$CLASSPATH""\$CATALINA_HOME"/bin/bootstrap\.jar$ line=CLASSPATH="$CLASSPATH""$CATALINA_HOME"/bin/bootstrap.jar:/etc/fc-eidas
+
+- name: Deploiement des libraires "endorsed" eIDAS
+  get_url: url=https://jenkins.dev-franceconnect.fr/job/eIDAS/17/artifact/AdditionalFiles/endorsed/{{ item }} dest={{ tomcat_folder }}/shared/lib/{{ item }} group=tomcat mode="u=rw,g=r,o=" validate_certs=no
+  with_items:
+    - xml-apis-1.4.01.jar
+    - resolver-2.9.1.jar
+    - serializer-2.7.2.jar
+    - xalan-2.7.2.jar
+    - xercesImpl-2.11.0.jar
+
+- name: Création du répertoire de configuration eIDAS
+  file: path={{ config_directory }} state=directory group=tomcat mode="u=rwx,g=rx,o="
+
+- name: Création du répertoire fc-config/metadata
+  file: path={{ config_directory }}/metadata state=directory group=tomcat mode="u=rwx,g=rx,o="
+
+- name: Création du setenv.sh pour Tomcat
+  file: path={{ tomcat_folder }}/bin/setenv.sh state=touch group=tomcat mode="u=rwx,g=rx,o="
+
+- name: Définition de la variable d\'environnement TOMCAT EIDAS_CONFIG_REPOSITORY
+  lineinfile: dest={{ tomcat_folder }}/bin/setenv.sh regexp="^export EIDAS_CONFIG_REPOSITORY=" line="export EIDAS_CONFIG_REPOSITORY=/etc/fc-eidas/"
+
+- name: Définition de la variable d\'environnement TOMCAT LOG_HOME
+  lineinfile: dest={{ tomcat_folder }}/bin/setenv.sh regexp="^export LOG_HOME=" line="export LOG_HOME=/var/log/eidas"
+
+- name: Upload des fichiers de configuration à partir des templates
+  template: src={{ item }}.j2 dest={{ config_directory}}/{{ item }} group=tomcat mode="u=rw,g=r,o="
+  with_items:
+    - eidas_Specific.xml
+    - eidasUtil.properties
+    - eidas.xml
+    - encryptionConf.xml
+    - EncryptModule_Connector-Service.xml
+    - EncryptModule_Service.xml
+    - EncryptModule_SP-Connector.xml
+    - EncryptModule_Specific.xml
+    - SignModule_Connector-Service.xml
+    - SignModule_Service.xml
+    - SignModule_SP-Connector.xml
+    - SignModule_Specific.xml
+    - specific.properties
+    - SamlEngine_Connector-Service.xml
+    - SamlEngine_SP-Connector.xml
+    - SamlEngine_Service.xml
+    - SamlEngine_Specific.xml
+  
+- name: Création du répertoire des keyStores
+  file: path={{ keystores_directory }} state=directory group=tomcat mode="u=rwx,g=rx,o="
+
+- name: Upload des keyStores
+  copy: src=keystore/ dest={{ keystores_directory }} group=tomcat mode="u=rw,g=r,o="
+
+- name: Arret de tomcat
+  become: yes
+  service: name=tomcat state=stopped
+
+- name: Récupération du WAR eIDAS-Node specific depuis Jenkins
+  get_url: url=https://jenkins.dev-franceconnect.fr/job/eIDAS_DEV_01_build/lastSuccessfulBuild/eu.eidas$eidas-specific-node/artifact/eu.eidas/eidas-specific-node/1.1.0/eidas-specific-node-1.1.0.war dest=/tmp/eidas-node.war group=tomcat mode="u=rw,g=r,o=" validate_certs=no
+  when: war_file is not defined
+
+- name: Upload du WAR eIDAS-Node specific
+  copy: src={{ war_file }} dest=/tmp/eidas-node.war group=tomcat mode="u=rw,g=r,o="
+  when: war_file is defined
+
+- name: Copie du WAR dans tomcat/webapps
+  command: "mv /tmp/eidas-node.war {{ tomcat_folder }}/webapps/EidasNode.war"
+
+- name: Supression de l''ancien déploiement
+  file: path={{ tomcat_folder }}/webapps/EidasNode state=absent
+
+- name: Creation d''un répertoire de déploiement vide
+  file: path={{ tomcat_folder }}/webapps/EidasNode state=directory owner=tomcat
+
+- name: Deploiement du WAR
+  command: unzip ../EidasNode.war chdir={{ tomcat_folder }}/webapps/EidasNode 
+
+- name: Ajustement de la conf logback
+  replace: dest={{ tomcat_folder }}/webapps/EidasNode/WEB-INF/classes/logback.xml regexp=(<fileNamePattern>)(eIDAS) replace=\1${LOG_HOME}/\2
+
+#### TODO: A sortir et mutualiser: deploiement des bouchons
+  
+- name: Récupération du WAR bouchon SP depuis Jenkins
+  get_url: url=https://jenkins.dev-franceconnect.fr/job/eIDAS/lastSuccessfulBuild/artifact/EIDAS-SP/target/SP.war dest=/tmp/SP.war group=tomcat mode="u=rw,g=r,o=" validate_certs=no
+
+- name: Copie du WAR dans tomcat/webapps
+  command: "mv /tmp/SP.war {{ tomcat_folder }}/webapps/SP.war"
+
+- name: Supression de l''ancien déploiement
+  file: path={{ tomcat_folder }}/webapps/SP state=absent
+
+- name: Creation d''un répertoire de déploiement vide
+  file: path={{ tomcat_folder }}/webapps/SP state=directory owner=tomcat
+
+- name: Deploiement du WAR SP
+  command: unzip ../SP.war chdir={{ tomcat_folder }}/webapps/SP 
+
+- name: Récupération des libs EidasNode -> SP
+  shell: "cp -u {{ tomcat_folder }}/webapps/EidasNode/WEB-INF/lib/*.jar {{ tomcat_folder }}/webapps/SP/WEB-INF/lib/"
+
+- name: Configuration du bouchon SP
+  template: src=SP/{{ item }}.j2 dest={{ tomcat_folder }}/webapps/SP/WEB-INF/classes/{{ item }} group=tomcat mode="u=rw,g=r,o="
+  with_items:
+  - SignModule_SP.xml
+  - EncryptModule_SP.xml
+  - sp.properties
+
+- name: Ajustement de la conf logback
+  replace: dest={{ tomcat_folder }}/webapps/SP/WEB-INF/classes/logback-test.xml regexp="(<param name=\"File\" value=\").*(\")" replace=\1/var/log/eidas/eidas-sp.log\2
+
+- name: Ajustement de la conf log4j
+  replace: dest={{ tomcat_folder }}/webapps/SP/WEB-INF/classes/log4j.xml regexp="(<param name=\"File\" value=\").*(\")" replace=\1/var/log/eidas/eidas-sp.log\2
+
+- name: Récupération du WAR bouchon IdP depuis Jenkins
+  get_url: url=https://jenkins.dev-franceconnect.fr/job/eIDAS/lastSuccessfulBuild/artifact/EIDAS-IdP-1.0/target/IdP.war dest=/tmp/IdP.war group=tomcat mode="u=rw,g=r,o=" validate_certs=no
+
+- name: Copie du WAR dans tomcat/webapps
+  command: "mv /tmp/IdP.war {{ tomcat_folder }}/webapps/IdP.war"
+
+- name: Supression de l''ancien déploiement
+  file: path={{ tomcat_folder }}/webapps/IdP state=absent
+
+- name: Creation d''un répertoire de déploiement vide
+  file: path={{ tomcat_folder }}/webapps/IdP state=directory owner=tomcat
+
+- name: Deploiement du WAR IdP
+  command: unzip ../IdP.war chdir={{ tomcat_folder }}/webapps/IdP 
+
+- name: Récupération des libs EidasNode -> IdP
+  shell: "cp -u {{ tomcat_folder }}/webapps/EidasNode/WEB-INF/lib/*.jar {{ tomcat_folder }}/webapps/IdP/WEB-INF/lib/"
+
+- name: Supression du JAR doublon log4j
+  file: dest={{ tomcat_folder }}/webapps/IdP/WEB-INF/lib/log4j-over-slf4j-1.7.10.jar state=absent
+
+- name: Configuration du bouchon IdP
+  template: src=IdP/{{ item }}.j2 dest={{ tomcat_folder }}/webapps/IdP/WEB-INF/classes/{{ item }} group=tomcat mode="u=rw,g=r,o="
+  with_items:
+  - EncryptModule_IdP.xml
+  - idp.properties
+  - SamlEngine_IdP.xml
+  - SignModule_IdP.xml
+
+- name: Copie du fichier utilisateurs IdP
+  copy: src=IdP/user.properties dest={{ tomcat_folder }}/webapps/IdP/WEB-INF/classes/ group=tomcat mode="u=rw,g=r,o="
+
+#- name: Démarrage de tomcat
+#  become: yes
+#  service: name=tomcat state=started
